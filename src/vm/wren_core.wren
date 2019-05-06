@@ -403,18 +403,24 @@ class MapValueSequence is Sequence {
 class Range is Sequence {}
 
 class System {
-  static print() {
-    writeString_("\n")
-  }
-
   static print(obj) {
     writeObject_(obj)
-    writeString_("\n")
     return obj
   }
 
+  static println() {
+    writeString_("\n")
+  }
+
+  static println(obj) {
+    writeObject_(obj)
+    writeString_("\n")
+  }
+
   static printAll(sequence) {
-    for (object in sequence) writeObject_(object)
+    for (object in sequence) {
+        writeObject_(object)
+    }
     writeString_("\n")
   }
 

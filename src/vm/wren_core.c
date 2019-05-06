@@ -1127,6 +1127,11 @@ DEF_PRIMITIVE(system_writeString)
   RETURN_VAL(args[1]);
 }
 
+DEF_PRIMITIVE(system_exit)
+{
+  exit(AS_NUM(args[1]));
+}
+
 // Creates either the Object or Class class in the core module with [name].
 static ObjClass* defineClass(WrenVM* vm, ObjModule* module, const char* name)
 {
@@ -1361,6 +1366,7 @@ void wrenInitializeCore(WrenVM* vm)
   PRIMITIVE(systemClass->obj.classObj, "clock", system_clock);
   PRIMITIVE(systemClass->obj.classObj, "gc()", system_gc);
   PRIMITIVE(systemClass->obj.classObj, "writeString_(_)", system_writeString);
+  PRIMITIVE(systemClass->obj.classObj, "exit(_)", system_exit);
 
   // While bootstrapping the core types and running the core module, a number
   // of string objects have been created, many of which were instantiated
