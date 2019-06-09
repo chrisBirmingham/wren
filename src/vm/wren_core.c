@@ -58,7 +58,7 @@ DEF_PRIMITIVE(fiber_new)
   {
     RETURN_ERROR("Function cannot take more than one parameter.");
   }
-  
+
   RETURN_OBJ(wrenNewFiber(vm, closure));
 }
 
@@ -95,7 +95,7 @@ static bool runFiber(WrenVM* vm, ObjFiber* fiber, Value* args, bool isCall,
     if (fiber->caller != NULL) RETURN_ERROR("Fiber has already been called.");
 
     if (fiber->state == FIBER_ROOT) RETURN_ERROR("Cannot call root fiber.");
-    
+
     // Remember who ran it.
     fiber->caller = vm->fiber;
   }
@@ -185,7 +185,7 @@ DEF_PRIMITIVE(fiber_transferError)
 DEF_PRIMITIVE(fiber_try)
 {
   runFiber(vm, AS_FIBER(args[0]), args, true, false, "try");
-  
+
   // If we're switching to a valid fiber to try, remember that we're trying it.
   if (!wrenHasError(vm->fiber)) vm->fiber->state = FIBER_TRY;
   return false;
@@ -254,7 +254,7 @@ static void call(WrenVM* vm, Value* args, int numArgs)
     vm->fiber->error = CONST_STRING(vm, "Function expects more arguments.");
     return;
   }
-  
+
   // +1 to include the function itself.
   wrenCallFunction(vm, vm->fiber, AS_CLOSURE(args[0]), numArgs + 1);
 }
@@ -292,17 +292,17 @@ DEF_PRIMITIVE(fn_toString)
 // Creates a new list of size args[1], with all elements initialized to args[2].
 DEF_PRIMITIVE(list_filled)
 {
-  if (!validateInt(vm, args[1], "Size")) return false;  
+  if (!validateInt(vm, args[1], "Size")) return false;
   if (AS_NUM(args[1]) < 0) RETURN_ERROR("Size cannot be negative.");
-  
+
   uint32_t size = (uint32_t)AS_NUM(args[1]);
   ObjList* list = wrenNewList(vm, size);
-  
+
   for (uint32_t i = 0; i < size; i++)
   {
     list->elements.data[i] = args[2];
   }
-  
+
   RETURN_OBJ(list);
 }
 
@@ -323,7 +323,7 @@ DEF_PRIMITIVE(list_add)
 DEF_PRIMITIVE(list_addCore)
 {
   wrenValueBufferWrite(vm, &AS_LIST(args[0])->elements, args[1]);
-  
+
   // Return the list.
   RETURN_VAL(args[0]);
 }
@@ -464,9 +464,9 @@ DEF_PRIMITIVE(map_subscriptSetter)
 DEF_PRIMITIVE(map_addCore)
 {
   if (!validateKey(vm, args[1])) return false;
-  
+
   wrenMapSet(vm, AS_MAP(args[0]), args[1], args[2]);
-  
+
   // Return the map itself.
   RETURN_VAL(args[0]);
 }
@@ -1009,7 +1009,7 @@ DEF_PRIMITIVE(string_indexOf2)
   ObjString* search = AS_STRING(args[1]);
   uint32_t start = validateIndex(vm, args[2], string->length, "Start");
   if (start == UINT32_MAX) return false;
-  
+
   uint32_t index = wrenStringFind(string, search, start);
   RETURN_NUM(index == UINT32_MAX ? -1 : (int)index);
 }
@@ -1121,32 +1121,6 @@ DEF_PRIMITIVE(string_toString)
   RETURN_VAL(args[0]);
 }
 
-DEF_PRIMITIVE(system_clock)
-{
-  RETURN_NUM((double)clock() / CLOCKS_PER_SEC);
-}
-
-DEF_PRIMITIVE(system_gc)
-{
-  wrenCollectGarbage(vm);
-  RETURN_NULL;
-}
-
-DEF_PRIMITIVE(system_writeString)
-{
-  if (vm->config.writeFn != NULL)
-  {
-    vm->config.writeFn(vm, AS_CSTRING(args[1]));
-  }
-
-  RETURN_VAL(args[1]);
-}
-
-DEF_PRIMITIVE(system_exit)
-{
-  exit(AS_NUM(args[1]));
-}
-
 // Creates either the Object or Class class in the core module with [name].
 static ObjClass* defineClass(WrenVM* vm, ObjModule* module, const char* name)
 {
@@ -1165,7 +1139,7 @@ void wrenInitializeCore(WrenVM* vm)
 {
   ObjModule* coreModule = wrenNewModule(vm, NULL);
   wrenPushRoot(vm, (Obj*)coreModule);
-  
+
   // The core module's key is null in the module map.
   wrenMapSet(vm, vm->modules, NULL_VAL, OBJ_VAL(coreModule));
   wrenPopRoot(vm); // coreModule.
@@ -1377,12 +1351,6 @@ void wrenInitializeCore(WrenVM* vm)
   PRIMITIVE(vm->rangeClass, "iterate(_)", range_iterate);
   PRIMITIVE(vm->rangeClass, "iteratorValue(_)", range_iteratorValue);
   PRIMITIVE(vm->rangeClass, "toString", range_toString);
-
-  ObjClass* systemClass = AS_CLASS(wrenFindVariable(vm, coreModule, "System"));
-  PRIMITIVE(systemClass->obj.classObj, "clock", system_clock);
-  PRIMITIVE(systemClass->obj.classObj, "gc()", system_gc);
-  PRIMITIVE(systemClass->obj.classObj, "writeString_(_)", system_writeString);
-  PRIMITIVE(systemClass->obj.classObj, "exit(_)", system_exit);
 
   // While bootstrapping the core types and running the core module, a number
   // of string objects have been created, many of which were instantiated
