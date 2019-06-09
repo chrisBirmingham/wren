@@ -194,12 +194,6 @@ typedef struct
   // stored in the foreign object when an instance is created.
   WrenBindForeignClassFn bindForeignClassFn;
 
-  // The callback Wren uses to display text when `System.print()` or the other
-  // related functions are called.
-  //
-  // If this is `NULL`, Wren discards any printed text.
-  WrenWriteFn writeFn;
-
   // The callback Wren uses to report errors.
   //
   // When an error occurs, this will be called with the module name, line
